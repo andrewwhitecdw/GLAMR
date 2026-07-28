@@ -15,6 +15,8 @@ class MLP(nn.Module):
             self.activation = torch.relu
         elif activation == 'sigmoid':
             self.activation = torch.sigmoid
+        else:
+            raise ValueError(f'Unsupported activation: {activation}')
 
         self.out_dim = hidden_dims[-1]
         self.norm_type = norm_type
@@ -27,6 +29,8 @@ class MLP(nn.Module):
             self.affine_layers.append(nn.Linear(last_dim, nh))
             if norm_type == 'group_norm':
                 self.norm_layers.append(nn.GroupNorm(num_norm_groups, nh))
+            elif norm_type is not None:
+                raise ValueError(f'Unsupported norm_type: {norm_type}')
             last_dim = nh
 
     def forward(self, x):
