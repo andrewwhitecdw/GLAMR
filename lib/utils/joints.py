@@ -116,7 +116,7 @@ class BodyJoints26FK:
                                 ([self.right_eye, self.right_ear], [self.left_eye, self.left_ear]),
                                 ([self.right_ankle, self.right_heel], [self.left_ankle, self.left_heel]),
                                 ([self.right_ankle, self.right_big_toe], [self.left_ankle, self.left_big_toe]),
-                                ([self.right_ankle, self.right_small_toe], [self.left_ankle, self.left_small_toe])]
+                                ([self.right_big_toe, self.right_small_toe], [self.left_big_toe, self.left_small_toe])]
 
         # colors for for each edge
         self.edge_colors = np.array([
@@ -570,7 +570,26 @@ class BodyJointsCOCO:
         self.symmetric_joint[self.left_ear]       = self.right_ear
         self.symmetric_joint[self.left_eye]       = self.right_eye
 
-        self.sigmas = np.array([.26, .25, .25, .35, .35, .79, .79, .72, .72, .62, .62, 1.07, 1.07, .87, .87, .89, .89]) / 10.0
+        self.sigmas = np.array([
+            .26,   # nose
+            .79,   # neck (shoulder proxy; no official COCO neck sigma)
+            .79,   # right_shoulder
+            .72,   # right_elbow
+            .62,   # right_wrist
+            .79,   # left_shoulder
+            .72,   # left_elbow
+            .62,   # left_wrist
+            1.07,  # right_hip
+            .87,   # right_knee
+            .89,   # right_ankle
+            1.07,  # left_hip
+            .87,   # left_knee
+            .89,   # left_ankle
+            .25,   # right_eye
+            .25,   # left_eye
+            .35,   # right_ear
+            .35,   # left_ear
+        ]) / 10.0
 
 
 class SMPLJoints:
