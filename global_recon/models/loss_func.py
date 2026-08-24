@@ -26,7 +26,8 @@ def keypoint_2d_loss(data, specs):
         loss = gmof(diff, sigma=100)
         if first_frame_only:
             loss = loss[[0]]
-            num_pose += vis_frames.sum()
+            score = score[[0]]
+            num_pose += 1
         else:
             num_pose += vis_frames.sum()
         loss[:10] *= first_frame_weight
