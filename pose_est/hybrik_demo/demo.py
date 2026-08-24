@@ -148,6 +148,7 @@ if opt.multi:
     # initialize
     for person_id in tracking_results:
         bbox_exist[person_id-1] = [0 for _ in range(len(img_path_list))]
+        bboxes[person_id-1] = [np.zeros(4) for _ in range(len(img_path_list))]
 
     for frame_idx in tqdm(range(len(img_path_list))):
 
@@ -192,7 +193,7 @@ if opt.multi:
                 pts[:, 0] = pts[:, 0] + bbox_xywh[0]
                 pts[:, 1] = pts[:, 1] + bbox_xywh[1]
 
-                bboxes[idx].append(np.array(bbox_xywh))
+                bboxes[idx][frame_idx] = np.array(bbox_xywh)
 
                 new_princpt = np.array([image.shape[1], image.shape[0]]) * 0.5
                 transl[:2] += (np.array(princpt) - new_princpt) * transl[2] / np.array(focal) 
@@ -216,7 +217,7 @@ if opt.multi:
     mot_bboxes = defaultdict(dict)
     for idx in bbox_exist:
         mot_bboxes[idx]['id'] = idx
-        mot_bboxes[idx]['bbox'] = np.stack(bboxes[idx]),
+        mot_bboxes[idx]['bbox'] = np.stack(bboxes[idx])
         mot_bboxes[idx]['exist'] = np.array(bbox_exist[idx])
         
         find = np.where(mot_bboxes[idx]['exist'])[0]
@@ -248,9 +249,9 @@ else:
 
     frame_idx = 0
 
-    bbox_exist = []
-    bboxes = []
-    for img_path in tqdm(img_path_list):
+    bbox_exist = [0.0 for _ in range(len(img_path_list))]
+    bboxes = [np.zeros(4) for _ in range(len(img_path_list))]
+    for real_frame_idx, img_path in enumerate(tqdm(img_path_list)):
         dirname = os.path.dirname(img_path)
         basename = os.path.basename(img_path)
 
@@ -265,10 +266,9 @@ else:
             tight_bbox = get_max_iou_box(det_output, prev_box)  # xyxy
 
         if tight_bbox is None:
-            bbox_exist.append(0.0)
             continue
         else:
-            bbox_exist.append(1.0)
+            bbox_exist[real_frame_idx] = 1.0
 
         prev_box = tight_bbox
 
@@ -307,7 +307,7 @@ else:
         pts[:, 0] = pts[:, 0] + bbox_xywh[0]
         pts[:, 1] = pts[:, 1] + bbox_xywh[1]
 
-        bboxes.append(np.array(bbox_xywh))
+        bboxes[real_frame_idx] = np.array(bbox_xywh)
 
         new_princpt = np.array([image.shape[1], image.shape[0]]) * 0.5
         transl[:2] += (np.array(princpt) - new_princpt) * transl[2] / np.array(focal) 
