@@ -134,11 +134,11 @@ def quat_between_two_vec(v1, v2, eps: float = 1e-6):
     out = torch.cat([(1 + dot).unsqueeze(-1), cross], dim=-1)
     # handle v1 & v2 with same direction
     sind = dot > 1 - eps
-    out[sind] = torch.tensor([1., 0., 0., 0.], device=v1.device)
+    out[sind] = torch.tensor([1., 0., 0., 0.], device=v1.device, dtype=v1.dtype)
     # handle v1 & v2 with opposite direction
     nind = dot < -1 + eps
     if torch.any(nind):
-        vx = torch.tensor([1., 0., 0.], device=v1.device)
+        vx = torch.tensor([1., 0., 0.], device=v1.device, dtype=v1.dtype)
         vxdot = (v1 * vx).sum(-1).abs()
         nxind = nind & (vxdot < 1 - eps)
         if torch.any(nxind):
@@ -146,7 +146,7 @@ def quat_between_two_vec(v1, v2, eps: float = 1e-6):
         # handle v1 & v2 with opposite direction and they are parallel to x axis
         pind = nind & (vxdot >= 1 - eps)
         if torch.any(pind):
-            vy = torch.tensor([0., 1., 0.], device=v1.device)
+            vy = torch.tensor([0., 1., 0.], device=v1.device, dtype=v1.dtype)
             out[pind] = angle_axis_to_quaternion(normalize(torch.cross(vy.expand_as(v1[pind]), v1[pind], dim=-1)) * np.pi)
     # normalize and reshape
     out = normalize(out).view(orig_shape[:-1] + (4,))
