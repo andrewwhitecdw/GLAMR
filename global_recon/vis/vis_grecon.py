@@ -108,8 +108,8 @@ class GReconVisualizer(Visualizer3D):
                     return_full_pose=True,
                     orig_joints=True
                 )
-            pose_dict['smpl_verts'] = smpl_motion.vertices.numpy()
-            pose_dict['smpl_joints'] = smpl_motion.joints.numpy()
+            pose_dict['smpl_verts'] = smpl_motion.vertices.cpu().numpy()
+            pose_dict['smpl_joints'] = smpl_motion.joints.cpu().numpy()
             if 'fr_start' not in pose_dict:
                 pose_dict['fr_start'] = np.where(pose_dict['visible'])[0][0]
 
@@ -131,8 +131,8 @@ class GReconVisualizer(Visualizer3D):
                     return_full_pose=True,
                     orig_joints=True
                 )
-                pose_dict['smpl_verts'] = smpl_motion.vertices.numpy()
-                pose_dict['smpl_joints'] = smpl_motion.joints.numpy()
+                pose_dict['smpl_verts'] = smpl_motion.vertices.cpu().numpy()
+                pose_dict['smpl_joints'] = smpl_motion.joints.cpu().numpy()
             if 'smpl_joint_pos' in pose_dict:
                 orient = torch.tensor(pose_dict[f'smpl_orient{suffix}'])
                 joints = torch.tensor(pose_dict['smpl_joint_pos'])
@@ -140,7 +140,7 @@ class GReconVisualizer(Visualizer3D):
                 joints = torch.cat([torch.zeros_like(joints[..., :3]), joints], dim=-1).view(*joints.shape[:-1], -1, 3)
                 orient_q = angle_axis_to_quaternion(orient).unsqueeze(-2).expand(joints.shape[:-1] + (4,))
                 joints_world = quat_apply(orient_q, joints) + trans.unsqueeze(-2)
-                pose_dict['smpl_joints'] = joints_world
+                pose_dict['smpl_joints'] = joints_world.cpu().numpy()
 
         if 'exist_frames' in self.scene_dict[0]:
             self.init_est_root_pos = np.concatenate([x['smpl_joints'][x['exist_frames'], 0] for x in self.scene_dict.values()]).mean(axis=0)
@@ -158,7 +158,7 @@ class GReconVisualizer(Visualizer3D):
             self.pl.camera.azimuth = 0
             self.set_camera_instrinsics(fx=self.focal_length[0], fy=self.focal_length[1])
         else:
-            focal_point = self.init_focal_point
+            focal_point = self.init_focal_point.copy()
             if self.use_y_up_coord:
                 focal_point[2] += 3.0
                 self.pl.camera.position = (focal_point[0] + self.view_dist, focal_point[1] + 2, focal_point[2])
@@ -292,7 +292,7 @@ class GReconVisualizer(Visualizer3D):
                 self.skeleton_actors[k].set_visibility(False)
 
         """ GT """
-        if self.show_gt_pose:
+        if self.show_gt_pose and len(self.gt) > 0:
             for i, actor in enumerate(self.smpl_gt_actors):
                 pose_dict = self.gt[i]
                 sk_actor = self.skeleton_gt_actors[i]
